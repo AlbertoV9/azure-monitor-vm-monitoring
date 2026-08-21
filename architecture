@@ -1,6 +1,6 @@
-This is a simple arhcitecture which purpose is to generate telemetry data. 
+This is a simple architecture which purpose is to generate telemetry data. 
 There are 4 VMs within which 2 are the instances placed in 2 different availability zones, called WebVM-1 and WebVM-2. 
 The same way AppVM-1 and AppVM-2 are created. They all have initially Azure Monitor Agent installed automatically due to being connected to a Data Collection Rule. 
 The Data Collection Rule sends the telemetry data to the Log Analytics workspace. 
-The data selected include all performance metrics, events and automatically generated heartbeats. 
-The telemetry data is then quieried in Log Analytics Workspace with the KQL to discover the state of the VMs and any discrepancies.
+The data selected include all performance metrics, Windows Events and automatically generated heartbeats. 
+The telemetry data is then queried in Log Analytics Workspace with the KQL to discover the state of the VMs and any discrepancies.
