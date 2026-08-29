@@ -1,106 +1,82 @@
-# Scenario 01 – VM Unavailable / Unexpected Restart
-
-## Ticket
+Scenario 01 – VM Unavailable / Unexpected Restart
+Ticket
 Users report that an application hosted on APPVM-1 became unavailable. Investigate whether the VM experienced an availability issue or unexpected restart and determine approximately when the incident occurred.
-
-## Investigation Objectives
-First, I would check if it was the VM that has become unavailable. There may be different reasons why it may have become unavailable: 
-- It may have lagged because of CPU or memory being depleted which can have their own reasons 
-- it may have had some OS crash which also can be cause by different factors 
-- it may have been some networking issue which prevented the app to communicate, it may have also prevented VM to send heartbeats and networking issues also have different causes
-Second option is that the app itself has become unavailable, which can lead to the app issues itself or issues with some dependencies. 
-Questions:
-Is the app highly available, does it have redundancy VMs which can take over the load? Do the other VMs also experience this issue or is it only the AppVM-1? 
-When was the time of occurrence and for how long the app has been unavailable? 
-Investigation:
-- If we don’t have the time of occurrence or the duration of unavailability, we need to determine if the VM has restarted in the time range of the app being unavailable, we can check this in activity
-  logs or query the activity logs telemetry in LAW to find the  …
-- check if there was some gap in sending heartbeat of the AppVM-1 and compare to other VMs mapped to same LAW and DCR
-- investigate with LAW if there was some CPU or memory breach during the incident time 
-- investigate networking telemetry to check if there was some connectivity issue 
-- investigate the events log in the time of incident to discover if there is any crash related event 
-- investigate boot events
-
-## Lab Simulation
-- artificially overloaded the CPU and memory by loops in PowerShell and then stopped VM from the Azure Portal 
-- no actual app is running on the VM, the case here is the VM issue 
-- generated Application error Events via Powershell
-
-
-## Investigation:
-
-### 1. Discover the heartbeat count of the VM during the incident time in comparison with other VMs mapped to the LAW with same DCR
-
+Investigation Objectives
+The first objective is to determine whether the VM itself became unavailable or whether the problem was isolated to the application or one of its dependencies.
+The investigation should establish:
+•	When the incident occurred and approximately how long it lasted.
+•	Whether APPVM-1 stopped reporting telemetry during the incident.
+•	Whether other VMs experienced the same issue.
+•	Whether the VM restarted or experienced an operating system failure.
+•	Whether resource pressure or another VM-level issue could have contributed to the incident.
+•	Whether application or system events provide additional evidence.
+•	Whether further investigation outside Azure Monitor is required.
+The investigation follows the principle of first establishing the scope of the failure before assuming that the VM itself is the cause.
+Lab Simulation
+•	CPU and memory usage were artificially increased using PowerShell.
+•	APPVM-1 was then stopped from the Azure Portal to simulate VM unavailability.
+•	Application error events were generated using PowerShell.
+•	No real application was hosted on the VM; the scenario focuses on investigating the VM and its telemetry.
+Investigation
+1. Determine whether the VM stopped reporting
+The first step was to compare the heartbeat data from APPVM-1 with the other VMs reporting to the same Log Analytics Workspace.
 Heartbeat
-| where TimeGenerated between(datetime(2026-08-25 8:23:00Z) .. datetime(2026-08-25 8:28:00Z))
-| summarize count()by bin(TimeGenerated, 5min), Computer
+| where TimeGenerated between (datetime(2026-08-25 08:23:00Z) .. datetime(2026-08-25 08:28:00Z))
+| summarize count() by bin(TimeGenerated, 5m), Computer
 | render timechart
-
-
-### 2. Investigate further the gap in heartbeat arrival of the specified VM
+This helps determine whether the affected VM stopped sending heartbeats while other VMs continued to report normally.
+2. Investigate the heartbeat gap
+After identifying a potential interruption, the heartbeat records for APPVM-1 were examined in more detail.
 Heartbeat
-| where Computer has "AppVM-1" and TimeGenerated between(datetime(2026-08-25 8:23:00Z) .. datetime(2026-08-25 8:28:00Z))
-
-### 3. When the gap started, When the gap ended, what was the last heartbeat before the arrival interruption, when was the first heartbeat after heartbeat retrieval
-Heartbeat
-| where Computer == "AppVM-1"
-| where TimeGenerated between (datetime(2026-08-25 10:15) .. datetime(2026-08-25 10:35))
-| project TimeGenerated
+| where Computer has "AppVM-1"
+| where TimeGenerated between (datetime(2026-08-25 08:23:00Z) .. datetime(2026-08-25 08:28:00Z))
 | sort by TimeGenerated desc
-
-
-Discover the processor performance around the time of the incident and compare to the data of other VMs with similar workload
+The purpose was to identify the last heartbeat before the interruption and determine when telemetry resumed.
+3. Investigate resource pressure
+CPU and memory telemetry was examined around the incident and compared with other VMs.
 Perf
-| where CounterName has "% Processor Time" and TimeGenerated between (datetime(2026-08-25 8:00:00Z) .. datetime(2026-08-25 8:30:00Z))
+| where CounterName == "% Processor Time"
+| where TimeGenerated between (datetime(2026-08-25 08:00:00Z) .. datetime(2026-08-25 08:30:00Z))
 | project TimeGenerated, Computer, CounterName, CounterValue
 | render timechart
-
-Discover the memory usage around the time of the incident and compare to the data of other VMs with similar workload
 Perf
-| where CounterName has "Available Bytes" and TimeGenerated between (datetime(2026-08-25 8:00:00Z) .. datetime(2026-08-25 8:30:00Z))
+| where CounterName == "Available Bytes"
+| where TimeGenerated between (datetime(2026-08-25 08:00:00Z) .. datetime(2026-08-25 08:30:00Z))
 | project TimeGenerated, Computer, CounterName, CounterValue
 | render timechart
-
-
-
-Investigate the Event logs to find any related event to the crash, resources overload or application issue
-Event
-| where Computer has "AppVM-1" and TimeGenerated between (datetime(2026-08-25 8:00:00Z) .. datetime(2026-08-25 8:30:00Z))
-| where EventLevelName !has "Information"
-| where Source has "MyApp"
-
-Investigate the disk queue in the time of incident and compare to the data of other VMs with similar workload
+Additional disk performance data was reviewed to determine whether storage activity could have contributed to the VM becoming unresponsive.
 Perf
 | where CounterName == "Avg. Disk Queue Length"
-| summarize avg(CounterValue) by bin(TimeGenerated, 1min), Computer
+| summarize avg(CounterValue) by bin(TimeGenerated, 1m), Computer
 | render timechart
+4. Investigate Windows Events
+Windows Event Logs were investigated for errors related to the application or potential system problems around the incident.
+Event
+| where Computer has "AppVM-1"
+| where TimeGenerated between (datetime(2026-08-25 08:00:00Z) .. datetime(2026-08-25 08:30:00Z))
+| where EventLevelName !has "Information"
+| where Source has "MyApp"
+Application errors were found during the investigation and were considered alongside the resource telemetry.
+Findings
+APPVM-1 stopped sending heartbeats between approximately 10:23 and 10:28, while the other VMs continued reporting normally. This indicates that the telemetry interruption was isolated to APPVM-1 rather than affecting the entire Log Analytics Workspace or monitoring environment.
+Azure Monitor Agent was present on the VM and the VM resumed sending heartbeat telemetry after it was restarted.
+Before the interruption, APPVM-1 experienced elevated CPU and memory usage. Application error events were also observed around the investigation period.
+The available evidence therefore indicates that the VM experienced an availability interruption preceded by significant resource pressure. However, the collected telemetry does not conclusively establish that CPU or memory exhaustion was the root cause of the crash.
+Conclusion
+The investigation established that APPVM-1 itself stopped reporting during the incident rather than simply losing one specific telemetry stream.
+The most likely area for further investigation is the VM and its workload immediately before the failure. Resource pressure and application errors provide potential contributing factors, but additional evidence would be required to establish the root cause.
+Recommended Next Steps
+In a production incident, I would continue the investigation by:
+•	Checking Azure Activity Log for VM state changes, restarts, provisioning changes or failed extensions.
+•	Reviewing Boot Diagnostics and operating system crash information.
+•	Identifying the processes responsible for the CPU and memory consumption.
+•	Reviewing Windows critical and error-level events for evidence of an operating system failure.
+•	Reviewing application logs in more detail.
+•	Verifying whether the application service is running and listening on the expected port.
+•	Testing application connectivity locally from the VM.
+•	If the application is reachable locally but not remotely, continuing with NSG, Windows Firewall and network connectivity investigation.
+•	Checking whether the application has redundant instances and whether APPVM-2 was able to continue serving users during the incident.
+Limitations
+The scenario was simulated in a lab environment and did not contain a real application workload. The VM was deliberately stopped after generating resource pressure, so the investigation demonstrates the troubleshooting methodology rather than reproducing a naturally occurring operating system crash.
+The observed correlation between resource pressure, application errors and VM unavailability should therefore be treated as evidence for further investigation rather than definitive proof of root cause.
 
-
-Perf
-| where CounterName has "Available Bytes" and TimeGenerated between (datetime(2026-08-25 8:00:00Z) .. datetime(2026-08-25 8:30:00Z))
-| summarize min(CounterValue) by bin(TimeGenerated, 1min), Computer, CounterName, CounterValue
-| render timechart
-
-
-Perf
-| where CounterName has "% Processor Time" and TimeGenerated between (datetime(2026-08-25 8:00:00Z) .. datetime(2026-08-25 8:30:00Z))
-| summarize max(CounterValue) by bin(TimeGenerated, 1min), Computer, CounterName, CounterValue
-| render timechart
-
-
-
-Findings:
-By investigation it was found that the VM has stopped sending heartbeats between 10:23 and 10:28 in comparison other VMs kept sending heartbeats.
-As checked the AMA was present in the Extensions and Applications, furthermore the VM begun again to send heartbeats after being rebooted. 
-The VM has had CPU and memory overloaded before crashing. By investigating further there were Application errors events found.  
-To discover the root cause, it would be recommended to investigate which processes has consumed the CPU and memory. It would be also recommended to investigate the crash logs of the VM and the App error logs. 
-Furthermore analyze the Event Logs critical/error level related to OS failure. 
-
-Additional from internet and AI research:
-Check Boot diagnostics
-Check Activity Log changes 
--	look for provisioning errors or failed extensions
-Check application service and restart via remote control 
-Test app access from the VM itself, curl http://localhost:<port>
--	check if the app is listening and if the correct port is assigned 
-Include validation of network connectivity such as checking if NSG is blocking traffic or VM firewall
