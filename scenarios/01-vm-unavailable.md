@@ -30,8 +30,11 @@ The investigation follows the principle of first establishing the scope of the f
 The first step was to compare the heartbeat data from APPVM-1 with the other VMs reporting to the same Log Analytics Workspace.
 
 Heartbeat
+
 | where TimeGenerated between (datetime(2026-08-25 08:23:00Z) .. datetime(2026-08-25 08:28:00Z))
+
 | summarize count() by bin(TimeGenerated, 5m), Computer
+
 | render timechart
 
 This helps determine whether the affected VM stopped sending heartbeats while other VMs continued to report normally.
@@ -41,8 +44,11 @@ This helps determine whether the affected VM stopped sending heartbeats while ot
 After identifying a potential interruption, the heartbeat records for APPVM-1 were examined in more detail.
 
 Heartbeat
+
 | where Computer has "AppVM-1"
+
 | where TimeGenerated between (datetime(2026-08-25 08:23:00Z) .. datetime(2026-08-25 08:28:00Z))
+
 | sort by TimeGenerated desc
 
 The purpose was to identify the last heartbeat before the interruption and determine when telemetry resumed.
@@ -52,22 +58,33 @@ The purpose was to identify the last heartbeat before the interruption and deter
 CPU and memory telemetry was examined around the incident and compared with other VMs.
 
 Perf
+
 | where CounterName == "% Processor Time"
+
 | where TimeGenerated between (datetime(2026-08-25 08:00:00Z) .. datetime(2026-08-25 08:30:00Z))
+
 | project TimeGenerated, Computer, CounterName, CounterValue
+
 | render timechart
 
 Perf
+
 | where CounterName == "Available Bytes"
+
 | where TimeGenerated between (datetime(2026-08-25 08:00:00Z) .. datetime(2026-08-25 08:30:00Z))
+
 | project TimeGenerated, Computer, CounterName, CounterValue
+
 | render timechart
 
 Additional disk performance data was reviewed to determine whether storage activity could have contributed to the VM becoming unresponsive.
 
 Perf
+
 | where CounterName == "Avg. Disk Queue Length"
+
 | summarize avg(CounterValue) by bin(TimeGenerated, 1m), Computer
+
 | render timechart
 
 ### 4. Investigate Windows Events
@@ -75,9 +92,13 @@ Perf
 Windows Event Logs were investigated for errors related to the application or potential system problems around the incident.
 
 Event
+
 | where Computer has "AppVM-1"
+
 | where TimeGenerated between (datetime(2026-08-25 08:00:00Z) .. datetime(2026-08-25 08:30:00Z))
+
 | where EventLevelName !has "Information"
+
 | where Source has "MyApp"
 
 Application errors were found during the investigation and were considered alongside the resource telemetry.
@@ -114,7 +135,7 @@ In a production incident, I would continue the investigation by:
 
 •	Checking whether the application has redundant instances and whether APPVM-2 was able to continue serving users during the incident.
 
-Limitations
+## Limitations
 The scenario was simulated in a lab environment and did not contain a real application workload. The VM was deliberately stopped after generating resource pressure, so the investigation demonstrates the troubleshooting methodology rather than reproducing a naturally occurring operating system crash.
 The observed correlation between resource pressure, application errors and VM unavailability should therefore be treated as evidence for further investigation rather than definitive proof of root cause.
 
