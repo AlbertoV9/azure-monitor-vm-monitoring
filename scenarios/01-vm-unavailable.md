@@ -97,14 +97,23 @@ The most likely area for further investigation is the VM and its workload immedi
 
 In a production incident, I would continue the investigation by:
 •	Checking Azure Activity Log for VM state changes, restarts, provisioning changes or failed extensions.
+
 •	Reviewing Boot Diagnostics and operating system crash information.
+
 •	Identifying the processes responsible for the CPU and memory consumption.
+
 •	Reviewing Windows critical and error-level events for evidence of an operating system failure.
+
 •	Reviewing application logs in more detail.
+
 •	Verifying whether the application service is running and listening on the expected port.
+
 •	Testing application connectivity locally from the VM.
+
 •	If the application is reachable locally but not remotely, continuing with NSG, Windows Firewall and network connectivity investigation.
+
 •	Checking whether the application has redundant instances and whether APPVM-2 was able to continue serving users during the incident.
+
 Limitations
 The scenario was simulated in a lab environment and did not contain a real application workload. The VM was deliberately stopped after generating resource pressure, so the investigation demonstrates the troubleshooting methodology rather than reproducing a naturally occurring operating system crash.
 The observed correlation between resource pressure, application errors and VM unavailability should therefore be treated as evidence for further investigation rather than definitive proof of root cause.
