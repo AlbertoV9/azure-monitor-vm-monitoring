@@ -179,15 +179,13 @@ Perf
 
 Perf
 
-| where CounterName == "Avg. Disk sec/Write"
-
-| where TimeGenerated > ago(1d)
+| where CounterName == "Avg. Disk sec/Write" and TimeGenerated > ago(1d)
 
 | summarize avg(CounterValue) by bin(TimeGenerated, 1m), Computer
 
 | render timechart
 
-
+![avg-disk-sec-write](../screenshots/scenario-03/avg-disk-sec-write.png)
 
 ### 8. Investigate disk throughput
 
