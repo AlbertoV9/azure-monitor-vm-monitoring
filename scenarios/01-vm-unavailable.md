@@ -68,6 +68,7 @@ The purpose was to identify the last heartbeat before the interruption and deter
 
 CPU and memory telemetry was examined around the incident and compared with other VMs.
 
+
 Perf
 
 | where CounterName == "% Processor Time"
@@ -78,6 +79,8 @@ Perf
 
 | render timechart
 
+![CPU-analysis](../screenshots/scenario-01/cpu-analysis.png)
+
 Perf
 
 | where CounterName == "Available Bytes"
@@ -87,6 +90,8 @@ Perf
 | project TimeGenerated, Computer, CounterName, CounterValue
 
 | render timechart
+
+![memory-analysis](../screenshots/scenario-01/memory-analysis.png)
 
 Additional disk performance data was reviewed to determine whether storage activity could have contributed to the VM becoming unresponsive.
 
@@ -110,13 +115,16 @@ Event
 
 | where EventLevelName !has "Information"
 
-| where Source has "MyApp"
+![Event-logs-check](../screenshots/scenario-01/Event-logs-check.png)
 
 Application errors were found during the investigation and were considered alongside the resource telemetry.
 
 ## Findings
 APPVM-1 stopped sending heartbeats between approximately 10:23 and 10:28, while the other VMs continued reporting normally. This indicates that the telemetry interruption was isolated to APPVM-1 rather than affecting the entire Log Analytics Workspace or monitoring environment.
 Azure Monitor Agent was present on the VM and the VM resumed sending heartbeat telemetry after it was restarted.
+
+![AMA-presence-check](../screenshots/scenario-01/AMA-presence-check.png)
+
 Before the interruption, APPVM-1 experienced elevated CPU and memory usage. Application error events were also observed around the investigation period.
 The available evidence therefore indicates that the VM experienced an availability interruption preceded by significant resource pressure. However, the collected telemetry does not conclusively establish that CPU or memory exhaustion was the root cause of the crash.
 
