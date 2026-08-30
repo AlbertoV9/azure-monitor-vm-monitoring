@@ -40,7 +40,7 @@ eventcreate /ID 1000 /L APPLICATION /T ERROR /SO DemoApp /D "File write operatio
 
 ## Investigation
   
-1. Identify available disk performance counters
+### 1. Identify available disk performance counters
   
 Before investigating the incident, available disk-related performance counters were reviewed.
   
@@ -80,7 +80,7 @@ Relevant counters included:
   
 This helped distinguish between capacity-related problems and potential disk I/O performance problems.
   
-2. Investigate free disk space over time
+### 2. Investigate free disk space over time
   
 The percentage of free space was examined over the previous hour to determine whether the issue was ongoing and whether the available capacity had changed significantly.
   
@@ -93,10 +93,12 @@ Perf
 | summarize min(CounterValue) by bin(TimeGenerated, 5m), Computer
   
 | render timechart
+
+![disk-space-usage](../screenshots/scenario-02/free-disk-space.png)
   
 The time-series view also allows the affected VM to be compared with other VMs and helps identify whether the decrease happened gradually or as a sudden change.
   
-3. Investigate available disk capacity
+### 3. Investigate available disk capacity
   
 Free space in megabytes was also examined to provide an absolute measure of the remaining capacity.
   
@@ -109,10 +111,12 @@ Perf
 | summarize min(CounterValue) by bin(TimeGenerated, 5m), Computer
   
 | render timechart
+
+![free-megabytes](../screenshots/scenario-02/free-megabytes.png)
   
 Using both % Free Space and Free Megabytes provides a more useful view than relying on a single metric.
   
-4. Investigate application and system events
+### 4. Investigate application and system events
   
 Windows Event Logs were investigated for errors and warnings occurring around the suspected incident period.
   
@@ -130,7 +134,7 @@ Event
   
 Application write errors were reviewed alongside the disk capacity timeline to determine whether the two events occurred during the same period.
   
-5. Determine whether disk I/O performance is contributing
+### 5. Determine whether disk I/O performance is contributing
   
 A capacity problem can be confused with a disk performance problem. Disk latency and queue-related metrics were therefore checked.
   
@@ -141,22 +145,18 @@ Perf
 | where TimeGenerated between (datetime(2026-08-25 01:20:00Z) .. now())
   
 | where CounterName in (
-  
     "Avg. Disk Queue Length",
     "Avg. Disk sec/Read",
-    "Avg. Disk sec/Write"
-  
+    "Avg. Disk sec/Write" 
 )
   
-| summarize avg(CounterValue)
-  
-    by bin(TimeGenerated, 5m), CounterName
-  
+| summarize avg(CounterValue) 
+    by bin(TimeGenerated, 5m), CounterName 
 | render timechart
   
 This helps determine whether slow disk I/O could be contributing to the application’s inability to write files.
   
-6. Check other VM resources
+### 6. Check other VM resources
   
 Heartbeat, CPU and memory telemetry were also reviewed to determine whether the disk issue was part of a broader VM performance problem.
 The affected VM was compared with other VMs to determine whether the behaviour was isolated to APPVM-1.
