@@ -8,20 +8,31 @@ Users report that an application hosted on APPVM-1 became unavailable. Investiga
 
 The first objective is to determine whether the VM itself became unavailable or whether the problem was isolated to the application or one of its dependencies.
 The investigation should establish:
+
 •	When the incident occurred and approximately how long it lasted.
+
 •	Whether APPVM-1 stopped reporting telemetry during the incident.
+
 •	Whether other VMs experienced the same issue.
+
 •	Whether the VM restarted or experienced an operating system failure.
+
 •	Whether resource pressure or another VM-level issue could have contributed to the incident.
+
 •	Whether application or system events provide additional evidence.
+
 •	Whether further investigation outside Azure Monitor is required.
 
 The investigation follows the principle of first establishing the scope of the failure before assuming that the VM itself is the cause.
 
 ## Lab Simulation
+
 •	CPU and memory usage were artificially increased using PowerShell.
+
 •	APPVM-1 was then stopped from the Azure Portal to simulate VM unavailability.
+
 •	Application error events were generated using PowerShell.
+
 •	No real application was hosted on the VM; the scenario focuses on investigating the VM and its telemetry.
 
 ## Investigation
