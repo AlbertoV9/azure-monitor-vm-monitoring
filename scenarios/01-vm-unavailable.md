@@ -152,7 +152,7 @@ In a production incident, I would continue the investigation by:
 
 •	If the application is reachable locally but not remotely, continuing with NSG, Windows Firewall and network connectivity investigation.
 
-•	Checking whether the application has redundant instances and whether APPVM-2 was able to continue serving users during the incident.
+•	Checking whether the application has redundant instances and whether APPVM-1 was able to continue serving users during the incident.
 
 ## Limitations
 The scenario was simulated in a lab environment and did not contain a real application workload. The VM was deliberately stopped after generating resource pressure, so the investigation demonstrates the troubleshooting methodology rather than reproducing a naturally occurring operating system crash.
