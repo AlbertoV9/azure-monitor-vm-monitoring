@@ -51,6 +51,8 @@ Perf
 
 | take 10
 
+![perf-logs-check](../screenshots/scenario-03/perf-logs-check.png)
+
 This establishes when performance telemetry was last received from the affected VM.
 
 ### 2. Compare the latest telemetry across VMs
@@ -64,6 +66,8 @@ Perf
 | sort by TimeGenerated
 
 | summarize max(TimeGenerated) by Computer
+
+![perf-by-vm](../screenshots/scenario-03/perf-by-vm.png)
 
 Event
 
