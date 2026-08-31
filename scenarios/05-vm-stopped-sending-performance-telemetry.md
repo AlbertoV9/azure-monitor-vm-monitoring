@@ -51,7 +51,7 @@ Perf
 
 | take 10
 
-![perf-logs-check](../screenshots/scenario-03/perf-logs-check.png)
+![perf-logs-check](../screenshots/scenario-05/perf-logs-check.png)
 
 This establishes when performance telemetry was last received from the affected VM.
 
@@ -67,7 +67,7 @@ Perf
 
 | summarize max(TimeGenerated) by Computer
 
-![perf-by-vm](../screenshots/scenario-03/perf-by-vm.png)
+![perf-by-vm](../screenshots/scenario-05/perf-by-vm.png)
 
 Event
 
@@ -77,7 +77,7 @@ Event
 
 | summarize max(TimeGenerated) by Computer
 
-![event-logs-compare](../screenshots/scenario-03/event-logs-compare.png)
+![event-logs-compare](../screenshots/scenario-05/event-logs-compare.png)
 
 Heartbeat
 
@@ -99,7 +99,7 @@ Event
 
 | take 10
 
-![event-logs-check](../screenshots/scenario-03/event-logs-check.png)
+![event-logs-check](../screenshots/scenario-05/event-logs-check.png)
 
 Heartbeat
 
@@ -109,7 +109,7 @@ Heartbeat
 
 | take 10
 
-![heartbeat-logs](../screenshots/scenario-03/heartbeat-logs.png)
+![heartbeat-logs](../screenshots/scenario-05/heartbeat-logs.png)
 
 Heartbeat and Event data continued to arrive while performance telemetry was missing.
 This indicates that the VM was still reporting telemetry and that the issue was specific to performance data collection rather than a complete loss of monitoring.
