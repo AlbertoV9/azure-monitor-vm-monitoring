@@ -86,7 +86,7 @@ Perf
 
 | render timechart
 
-![packets-sent-sec](../screenshots/scenario-03/packets-sent-sec.png)
+![packets-sent-sec](../screenshots/scenario-04/packets-sent-sec.png)
 
 Perf
 
@@ -112,7 +112,7 @@ Perf
 
 | render timechart
 
-![bytes-sent-received](../screenshots/scenario-03/bytes-sent-received.png)
+![bytes-sent-received](../screenshots/scenario-04/bytes-sent-received.png)
 
 The received traffic was also compared with other VMs.
 
