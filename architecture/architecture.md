@@ -1,4 +1,5 @@
-Architecture
+# Architecture
+
 This is a simple architecture whose purpose is to generate telemetry data for Azure Monitor troubleshooting scenarios.
 Four Windows VMs were used to provide multiple independent telemetry sources and allow comparison between affected and healthy instances during investigations. The VMs are organized into two Web and two App instances.
 Azure Monitor Agent (AMA) is installed on the VMs and configured through a Data Collection Rule (DCR). The DCR defines the telemetry to be collected and sends the data to a Log Analytics Workspace.
